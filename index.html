@@ -7,35 +7,1427 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
-  html, body { margin: 0; padding: 0; height: 100%; background: #050510; overflow: hidden; }
-  #root { width: 100vw; height: 100vh; }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    height: 100%;
+    background: #050510;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #root {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+  }
+  #footer-bar {
+    flex-shrink: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    background: rgba(5,5,16,0.97);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(248,250,252,0.28);
+    gap: 24px;
+  }
+  #footer-bar a {
+    color: rgba(248,250,252,0.42);
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+  #footer-bar a:hover { color: rgba(248,250,252,0.85); }
+  #footer-bar .socials { display: flex; gap: 20px; }
+  #footer-bar .made { color: rgba(248,250,252,0.22); }
+  #footer-bar .made b { color: rgba(248,250,252,0.38); font-weight: 500; }
 </style>
 </head>
-<template id="__bundler_thumbnail" data-bg-color="#0B0B1F">
-  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#A855F7"/>
-        <stop offset="1" stop-color="#22D3EE"/>
-      </linearGradient>
-    </defs>
-    <rect x="180" y="280" width="840" height="240" rx="40" fill="url(#g)"/>
-    <text x="600" y="445" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="900" font-size="160" fill="#0B0B1F" letter-spacing="-6">AI</text>
-  </svg>
-</template>
-<body data-screen-label="00:00 — Хакни запуск с AI · 16:9 · 89s">
+<body>
 <div id="root"></div>
+
+<footer id="footer-bar">
+  <div><a href="#privacy">Политика конфиденциальности</a></div>
+  <div class="socials">
+    <a href="https://t.me/dahazapuskai" target="_blank" rel="noopener">▶ Telegram канал</a>
+    <a href="https://t.me/dashazapuskai" target="_blank" rel="noopener">✉ Написать Даше</a>
+  </div>
+  <div class="made">Сделано в <b>Claude</b> · © 2026 Даша · Хакни запуск с AI</div>
+</footer>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-<script type="text/babel" src="animations.jsx"></script>
-<script type="text/babel" src="scenes.jsx"></script>
-<script type="text/babel" src="scenes_slice.jsx"></script>
-<script type="text/babel" src="scenes2.jsx"></script>
-
 <script type="text/babel">
+// ── animations.jsx ──────────────────────────────────────────────────────────
+
+const Easing = {
+  linear: (t) => t,
+  easeInQuad:    (t) => t * t,
+  easeOutQuad:   (t) => t * (2 - t),
+  easeInOutQuad: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+  easeInCubic:    (t) => t * t * t,
+  easeOutCubic:   (t) => (--t) * t * t + 1,
+  easeInOutCubic: (t) => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
+  easeInQuart:    (t) => t * t * t * t,
+  easeOutQuart:   (t) => 1 - (--t) * t * t * t,
+  easeInOutQuart: (t) => (t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t),
+  easeInExpo:  (t) => (t === 0 ? 0 : Math.pow(2, 10 * (t - 1))),
+  easeOutExpo: (t) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
+  easeInOutExpo: (t) => {
+    if (t === 0) return 0; if (t === 1) return 1;
+    if (t < 0.5) return 0.5 * Math.pow(2, 20 * t - 10);
+    return 1 - 0.5 * Math.pow(2, -20 * t + 10);
+  },
+  easeInSine:    (t) => 1 - Math.cos((t * Math.PI) / 2),
+  easeOutSine:   (t) => Math.sin((t * Math.PI) / 2),
+  easeInOutSine: (t) => -(Math.cos(Math.PI * t) - 1) / 2,
+  easeOutBack: (t) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); },
+  easeInBack: (t) => { const c1 = 1.70158, c3 = c1 + 1; return c3 * t * t * t - c1 * t * t; },
+  easeInOutBack: (t) => {
+    const c1 = 1.70158, c2 = c1 * 1.525;
+    return t < 0.5
+      ? (Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2
+      : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
+  },
+  easeOutElastic: (t) => {
+    const c4 = (2 * Math.PI) / 3;
+    if (t === 0) return 0; if (t === 1) return 1;
+    return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+  },
+};
+
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+function interpolate(input, output, ease = Easing.linear) {
+  return (t) => {
+    if (t <= input[0]) return output[0];
+    if (t >= input[input.length - 1]) return output[output.length - 1];
+    for (let i = 0; i < input.length - 1; i++) {
+      if (t >= input[i] && t <= input[i + 1]) {
+        const span = input[i + 1] - input[i];
+        const local = span === 0 ? 0 : (t - input[i]) / span;
+        const easeFn = Array.isArray(ease) ? (ease[i] || Easing.linear) : ease;
+        return output[i] + (output[i + 1] - output[i]) * easeFn(local);
+      }
+    }
+    return output[output.length - 1];
+  };
+}
+
+function animate({ from = 0, to = 1, start = 0, end = 1, ease = Easing.easeInOutCubic }) {
+  return (t) => {
+    if (t <= start) return from;
+    if (t >= end) return to;
+    return from + (to - from) * ease((t - start) / (end - start));
+  };
+}
+
+const TimelineContext = React.createContext({ time: 0, duration: 10, playing: false });
+const useTime = () => React.useContext(TimelineContext).time;
+const useTimeline = () => React.useContext(TimelineContext);
+
+const SpriteContext = React.createContext({ localTime: 0, progress: 0, duration: 0 });
+const useSprite = () => React.useContext(SpriteContext);
+
+function Sprite({ start = 0, end = Infinity, children, keepMounted = false }) {
+  const { time } = useTimeline();
+  const visible = time >= start && time <= end;
+  if (!visible && !keepMounted) return null;
+  const duration = end - start;
+  const localTime = Math.max(0, time - start);
+  const progress = duration > 0 && isFinite(duration) ? clamp(localTime / duration, 0, 1) : 0;
+  const value = { localTime, progress, duration, visible };
+  return (
+    <SpriteContext.Provider value={value}>
+      {typeof children === 'function' ? children(value) : children}
+    </SpriteContext.Provider>
+  );
+}
+
+function TextSprite({ text, x = 0, y = 0, size = 48, color = '#111', font = 'Inter, system-ui, sans-serif',
+  weight = 600, entryDur = 0.45, exitDur = 0.35,
+  entryEase = Easing.easeOutBack, exitEase = Easing.easeInCubic,
+  align = 'left', letterSpacing = '-0.01em' }) {
+  const { localTime, duration } = useSprite();
+  const exitStart = Math.max(0, duration - exitDur);
+  let opacity = 1, ty = 0;
+  if (localTime < entryDur) {
+    const t = entryEase(clamp(localTime / entryDur, 0, 1));
+    opacity = t; ty = (1 - t) * 16;
+  } else if (localTime > exitStart) {
+    const t = exitEase(clamp((localTime - exitStart) / exitDur, 0, 1));
+    opacity = 1 - t; ty = -t * 8;
+  }
+  const translateX = align === 'center' ? '-50%' : align === 'right' ? '-100%' : '0';
+  return (
+    <div style={{ position: 'absolute', left: x, top: y,
+      transform: `translate(${translateX}, ${ty}px)`, opacity,
+      fontFamily: font, fontSize: size, fontWeight: weight,
+      color, letterSpacing, whiteSpace: 'pre', lineHeight: 1.1,
+      willChange: 'transform, opacity' }}>
+      {text}
+    </div>
+  );
+}
+
+function Stage({ width = 1280, height = 720, duration = 10, background = '#f6f4ef',
+  fps = 60, loop = true, autoplay = true, persistKey = 'animstage', children }) {
+  const [time, setTime] = React.useState(() => {
+    try {
+      const v = parseFloat(localStorage.getItem(persistKey + ':t') || '0');
+      return isFinite(v) ? clamp(v, 0, duration) : 0;
+    } catch { return 0; }
+  });
+  const [playing, setPlaying] = React.useState(autoplay);
+  const [hoverTime, setHoverTime] = React.useState(null);
+  const [scale, setScale] = React.useState(1);
+  const stageRef = React.useRef(null);
+  const canvasRef = React.useRef(null);
+  const rafRef = React.useRef(null);
+  const lastTsRef = React.useRef(null);
+
+  React.useEffect(() => {
+    try { localStorage.setItem(persistKey + ':t', String(time)); } catch {}
+  }, [time, persistKey]);
+
+  React.useEffect(() => {
+    if (!stageRef.current) return;
+    const el = stageRef.current;
+    const measure = () => {
+      const barH = 44;
+      const s = Math.min(el.clientWidth / width, (el.clientHeight - barH) / height);
+      setScale(Math.max(0.05, s));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
+  }, [width, height]);
+
+  React.useEffect(() => {
+    if (!playing) { lastTsRef.current = null; return; }
+    const step = (ts) => {
+      if (lastTsRef.current == null) lastTsRef.current = ts;
+      const dt = (ts - lastTsRef.current) / 1000;
+      lastTsRef.current = ts;
+      setTime((t) => {
+        let next = t + dt;
+        if (next >= duration) {
+          if (loop) next = next % duration;
+          else { next = duration; setPlaying(false); }
+        }
+        return next;
+      });
+      rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); lastTsRef.current = null; };
+  }, [playing, duration, loop]);
+
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.code === 'Space') { e.preventDefault(); setPlaying(p => !p); }
+      else if (e.code === 'ArrowLeft') setTime(t => clamp(t - (e.shiftKey ? 1 : 0.1), 0, duration));
+      else if (e.code === 'ArrowRight') setTime(t => clamp(t + (e.shiftKey ? 1 : 0.1), 0, duration));
+      else if (e.key === '0' || e.code === 'Home') setTime(0);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [duration]);
+
+  const displayTime = hoverTime != null ? hoverTime : time;
+  const ctxValue = React.useMemo(
+    () => ({ time: displayTime, duration, playing, setTime, setPlaying }),
+    [displayTime, duration, playing]
+  );
+
+  return (
+    <div ref={stageRef} style={{ position: 'absolute', inset: 0,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      background: '#0a0a0a', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', overflow: 'hidden', minHeight: 0 }}>
+        <div ref={canvasRef} style={{ width, height, background,
+          position: 'relative', transform: `scale(${scale})`,
+          transformOrigin: 'center', flexShrink: 0,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.4)', overflow: 'hidden' }}>
+          <TimelineContext.Provider value={ctxValue}>
+            {children}
+          </TimelineContext.Provider>
+        </div>
+      </div>
+      <PlaybackBar time={displayTime} actualTime={time} duration={duration} playing={playing}
+        onPlayPause={() => setPlaying(p => !p)} onReset={() => setTime(0)}
+        onSeek={(t) => setTime(t)} onHover={(t) => setHoverTime(t)} />
+    </div>
+  );
+}
+
+function PlaybackBar({ time, duration, playing, onPlayPause, onReset, onSeek, onHover }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  const timeFromEvent = React.useCallback((e) => {
+    const rect = trackRef.current.getBoundingClientRect();
+    return clamp((e.clientX - rect.left) / rect.width, 0, 1) * duration;
+  }, [duration]);
+  const onTrackMove = (e) => {
+    if (!trackRef.current) return;
+    const t = timeFromEvent(e);
+    if (dragging) onSeek(t); else onHover(t);
+  };
+  const onTrackLeave = () => { if (!dragging) onHover(null); };
+  const onTrackDown = (e) => { setDragging(true); onSeek(timeFromEvent(e)); onHover(null); };
+  React.useEffect(() => {
+    if (!dragging) return;
+    const onUp = () => setDragging(false);
+    const onMove = (e) => { if (trackRef.current) onSeek(timeFromEvent(e)); };
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('mousemove', onMove);
+    return () => { window.removeEventListener('mouseup', onUp); window.removeEventListener('mousemove', onMove); };
+  }, [dragging, timeFromEvent, onSeek]);
+  const pct = duration > 0 ? (time / duration) * 100 : 0;
+  const fmt = (t) => {
+    const total = Math.max(0, t);
+    const m = Math.floor(total / 60), s = Math.floor(total % 60), cs = Math.floor((total * 100) % 100);
+    return `${m}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
+  };
+  const mono = 'JetBrains Mono, ui-monospace, monospace';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 16px',
+      background: 'rgba(20,20,20,0.92)', borderTop: '1px solid rgba(255,255,255,0.08)',
+      width: '100%', maxWidth: 680, alignSelf: 'center', borderRadius: 8,
+      color: '#f6f4ef', fontFamily: 'Inter, system-ui, sans-serif', userSelect: 'none', flexShrink: 0 }}>
+      <IconButton onClick={onReset} title="Return to start (0)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 2v10M12 2L5 7l7 5V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+        </svg>
+      </IconButton>
+      <IconButton onClick={onPlayPause} title="Play/pause (space)">
+        {playing ? (
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="3" y="2" width="3" height="10" fill="currentColor"/>
+            <rect x="8" y="2" width="3" height="10" fill="currentColor"/>
+          </svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M3 2l9 5-9 5V2z" fill="currentColor"/>
+          </svg>
+        )}
+      </IconButton>
+      <div style={{ fontFamily: mono, fontSize: 12, fontVariantNumeric: 'tabular-nums',
+        width: 64, textAlign: 'right', color: '#f6f4ef' }}>{fmt(time)}</div>
+      <div ref={trackRef} onMouseMove={onTrackMove} onMouseLeave={onTrackLeave} onMouseDown={onTrackDown}
+        style={{ flex: 1, height: 22, position: 'relative', cursor: 'pointer',
+          display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, height: 4,
+          background: 'rgba(255,255,255,0.12)', borderRadius: 2 }} />
+        <div style={{ position: 'absolute', left: 0, width: `${pct}%`, height: 4,
+          background: 'oklch(72% 0.12 250)', borderRadius: 2 }} />
+        <div style={{ position: 'absolute', left: `${pct}%`, top: '50%',
+          width: 12, height: 12, marginLeft: -6, marginTop: -6,
+          background: '#fff', borderRadius: 6, boxShadow: '0 2px 4px rgba(0,0,0,0.4)' }} />
+      </div>
+      <div style={{ fontFamily: mono, fontSize: 12, fontVariantNumeric: 'tabular-nums',
+        width: 64, textAlign: 'left', color: 'rgba(246,244,239,0.55)' }}>{fmt(duration)}</div>
+    </div>
+  );
+}
+
+function IconButton({ children, onClick, title }) {
+  const [hover, setHover] = React.useState(false);
+  return (
+    <button onClick={onClick} title={title}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: hover ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#f6f4ef',
+        cursor: 'pointer', padding: 0, transition: 'background 120ms' }}>
+      {children}
+    </button>
+  );
+}
+
+// ── scenes.jsx ──────────────────────────────────────────────────────────────
+
+const P = {
+  bg: '#0B0B1F', bg2: '#1A0F2E',
+  ink: '#F8FAFC', ink2: 'rgba(248,250,252,0.6)', ink3: 'rgba(248,250,252,0.35)',
+  violet: '#A855F7', cyan: '#22D3EE',
+  magenta: '#FF3D8F', pink: '#FF6FAE', hotpink: '#FF1F70',
+  lime: '#BEF264', amber: '#FBBF24',
+  line: 'rgba(255,61,143,0.18)',
+};
+
+const FONT_DISPLAY = '"Manrope", "Inter", system-ui, sans-serif';
+const FONT_BODY = '"Inter", system-ui, sans-serif';
+const FONT_MONO = '"JetBrains Mono", ui-monospace, monospace';
+
+function ParallaxBackground() {
+  const t = useTime();
+  const slowX = Math.sin(t * 0.08) * 30, slowY = Math.cos(t * 0.06) * 20;
+  const midX  = Math.sin(t * 0.15 + 1) * 60, midY  = Math.cos(t * 0.11 + 0.5) * 40;
+  const fastX = Math.sin(t * 0.25 + 2) * 90, fastY = Math.cos(t * 0.19 + 1.2) * 70;
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      <div style={{ position: 'absolute', inset: 0,
+        background: `radial-gradient(ellipse 80% 60% at 50% 40%, ${P.bg2} 0%, ${P.bg} 70%)` }} />
+      <div style={{ position: 'absolute',
+        left: -100 + slowX, top: -100 + slowY, right: -100 - slowX, bottom: -100 - slowY,
+        backgroundImage: `linear-gradient(${P.line} 1px, transparent 1px), linear-gradient(90deg, ${P.line} 1px, transparent 1px)`,
+        backgroundSize: '80px 80px', opacity: 0.5,
+        maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, #000 30%, transparent 90%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, #000 30%, transparent 90%)' }} />
+      <div style={{ position: 'absolute', left: -200 + midX, top: -150 + midY, width: 700, height: 700,
+        background: `radial-gradient(circle, ${P.violet}33 0%, transparent 60%)`, filter: 'blur(40px)' }} />
+      <div style={{ position: 'absolute', right: -250 - midX, bottom: -200 - midY, width: 800, height: 800,
+        background: `radial-gradient(circle, ${P.magenta}40 0%, transparent 60%)`, filter: 'blur(50px)' }} />
+      <div style={{ position: 'absolute', right: -100 + midX * 0.5, top: 200 - midY * 0.5, width: 500, height: 500,
+        background: `radial-gradient(circle, ${P.cyan}26 0%, transparent 60%)`, filter: 'blur(60px)' }} />
+      {[[220,180,6,P.violet],[1480,140,4,P.magenta],[380,920,5,P.pink],[1620,880,7,P.magenta],
+        [960,220,3,P.cyan],[120,600,4,P.pink],[1820,540,5,P.magenta],[820,940,4,P.cyan]].map(([px,py,r,c],i) => (
+        <div key={i} style={{ position: 'absolute',
+          left: px + fastX * (i % 2 ? 1 : -1) * 0.4,
+          top:  py + fastY * (i % 3 ? 1 : -1) * 0.3,
+          width: r*2, height: r*2, borderRadius: '50%',
+          background: c, boxShadow: `0 0 ${r*4}px ${c}`, opacity: 0.7 }} />
+      ))}
+      <div style={{ position: 'absolute', inset: 0,
+        backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 3px)',
+        pointerEvents: 'none' }} />
+    </div>
+  );
+}
+
+function Chip({ text, color = P.violet, x, y, delay = 0, size = 18 }) {
+  const { localTime } = useSprite();
+  const t = clamp((localTime - delay) / 0.4, 0, 1);
+  const ease = Easing.easeOutBack(t);
+  return (
+    <div style={{ position: 'absolute', left: x, top: y,
+      transform: `translate(-50%, -50%) scale(${ease})`, opacity: t,
+      padding: '8px 16px', borderRadius: 999,
+      background: `${color}1A`, border: `1px solid ${color}66`, color: P.ink,
+      fontFamily: FONT_BODY, fontSize: size, fontWeight: 500, letterSpacing: '-0.005em',
+      whiteSpace: 'nowrap', backdropFilter: 'blur(6px)', boxShadow: `0 0 24px ${color}33` }}>
+      {text}
+    </div>
+  );
+}
+
+function GlowText({ text, x, y, size = 120, color = P.ink, weight = 800, delay = 0, accent = P.violet, align = 'center' }) {
+  const { localTime } = useSprite();
+  const t = clamp((localTime - delay) / 0.6, 0, 1);
+  const ease = Easing.easeOutCubic(t);
+  const tx = align === 'center' ? '-50%' : align === 'right' ? '-100%' : '0';
+  return (
+    <div style={{ position: 'absolute', left: x, top: y,
+      transform: `translate(${tx}, ${(1 - ease) * 24}px)`, opacity: ease,
+      fontFamily: FONT_DISPLAY, fontSize: size, fontWeight: weight, color,
+      letterSpacing: '-0.035em', lineHeight: 0.95,
+      textShadow: `0 0 60px ${accent}44`, whiteSpace: 'pre' }}>
+      {text}
+    </div>
+  );
+}
+
+function NeonRule({ x, y, w, color = P.violet, delay = 0, height = 2 }) {
+  const { localTime } = useSprite();
+  const t = clamp((localTime - delay) / 0.5, 0, 1);
+  const ease = Easing.easeOutExpo(t);
+  return (
+    <div style={{ position: 'absolute', left: x, top: y,
+      width: w * ease, height,
+      background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+      boxShadow: `0 0 12px ${color}`, borderRadius: 2 }} />
+  );
+}
+
+function KeyValue({ label, value, x, y, delay = 0, color = P.cyan }) {
+  const { localTime } = useSprite();
+  const t = clamp((localTime - delay) / 0.5, 0, 1);
+  return (
+    <div style={{ position: 'absolute', left: x, top: y,
+      transform: `translateY(${(1 - Easing.easeOutCubic(t)) * 12}px)`, opacity: t,
+      fontFamily: FONT_MONO, fontSize: 14, letterSpacing: '0.08em',
+      textTransform: 'uppercase', color: P.ink3 }}>
+      <span style={{ color }}>// </span>{label}
+      {value && <span style={{ color: P.ink, marginLeft: 12 }}>{value}</span>}
+    </div>
+  );
+}
+
+function SceneHook() {
+  return (
+    <Sprite start={0} end={4.5}>
+      {({ localTime }) => {
+        const words = [
+          { txt: 'Telegram', x: 260, y: 220 }, { txt: 'MAX', x: 1620, y: 280 },
+          { txt: 'Threads', x: 380, y: 880 }, { txt: 'офферы', x: 1500, y: 820 },
+          { txt: 'прогрев', x: 240, y: 540 }, { txt: 'воронки', x: 1680, y: 560 },
+          { txt: 'контент-план', x: 580, y: 200 }, { txt: 'reels', x: 1320, y: 200 },
+          { txt: 'визуалы', x: 460, y: 760 }, { txt: 'промпты', x: 1280, y: 880 },
+          { txt: 'CTA', x: 760, y: 920 }, { txt: 'правки', x: 1140, y: 160 },
+        ];
+        const suckT = clamp(localTime / 2.2, 0, 1);
+        const suckEase = Easing.easeInExpo(suckT);
+        const titleT = clamp((localTime - 2.2) / 1.0, 0, 1);
+        const titleEase = Easing.easeOutBack(titleT);
+        return (
+          <div style={{ position: 'absolute', inset: 0 }}>
+            {words.map((w, i) => {
+              const cx = 960, cy = 540;
+              const x = w.x + (cx - w.x) * suckEase;
+              const y = w.y + (cy - w.y) * suckEase;
+              const scale = 1 - suckEase * 0.9;
+              const opacity = (1 - suckEase) * 0.85;
+              return (
+                <div key={i} style={{ position: 'absolute', left: x, top: y,
+                  transform: `translate(-50%, -50%) scale(${scale}) rotate(${(i - 5) * 3}deg)`,
+                  opacity, fontFamily: FONT_MONO, fontSize: 22,
+                  color: i % 3 === 0 ? P.violet : i % 3 === 1 ? P.cyan : P.ink2,
+                  filter: `blur(${suckEase * 8}px)`, letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+                  {w.txt}
+                </div>
+              );
+            })}
+            {suckT > 0.85 && (
+              <div style={{ position: 'absolute', left: 960, top: 540,
+                width: 40, height: 40,
+                transform: `translate(-50%, -50%) scale(${(suckT - 0.85) * 30})`,
+                background: `radial-gradient(circle, ${P.violet}, transparent 70%)`,
+                borderRadius: '50%', opacity: Math.max(0, 1 - (suckT - 0.85) * 6) }} />
+            )}
+            {titleT > 0 && (
+              <>
+                <div style={{ position: 'absolute', left: 960, top: 470,
+                  transform: `translate(-50%, -50%) scale(${0.85 + titleEase * 0.15})`,
+                  opacity: titleT, fontFamily: FONT_DISPLAY, fontSize: 200, fontWeight: 900,
+                  color: P.ink, letterSpacing: '-0.05em', lineHeight: 0.9,
+                  textAlign: 'center', textShadow: `0 0 80px ${P.violet}66`, whiteSpace: 'nowrap' }}>
+                  ХАКНИ ЗАПУСК
+                </div>
+                <div style={{ position: 'absolute', left: 960, top: 640,
+                  transform: `translate(-50%, -50%) scale(${0.85 + titleEase * 0.15})`,
+                  opacity: titleT, fontFamily: FONT_DISPLAY, fontSize: 200, fontWeight: 900,
+                  letterSpacing: '-0.05em', lineHeight: 0.9, textAlign: 'center', whiteSpace: 'nowrap',
+                  background: `linear-gradient(90deg, ${P.magenta}, ${P.violet}, ${P.cyan})`,
+                  WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+                  textShadow: `0 0 80px ${P.magenta}66` }}>
+                  С&nbsp;AI
+                </div>
+                <div style={{ position: 'absolute', left: 960, top: 800,
+                  transform: 'translate(-50%, -50%)', opacity: titleT,
+                  fontFamily: FONT_MONO, fontSize: 22, color: P.ink3,
+                  letterSpacing: '0.3em', textTransform: 'uppercase' }}>
+                  6-недельная продюсерская программа
+                </div>
+              </>
+            )}
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+function SceneMainPromise() {
+  return (
+    <Sprite start={11.5} end={17.5}>
+      {({ localTime }) => {
+        const numT = clamp(localTime / 0.6, 0, 1);
+        const numScale = Easing.easeOutBack(numT);
+        const arrowT = clamp((localTime - 1.0) / 0.5, 0, 1);
+        const brainT = clamp((localTime - 1.6) / 0.7, 0, 1);
+        const exitT = clamp((localTime - 4.8) / 1.2, 0, 1);
+        const exitOp = 1 - Easing.easeInCubic(exitT);
+        return (
+          <div style={{ position: 'absolute', inset: 0, opacity: exitOp }}>
+            <KeyValue label="Главное обещание" x={120} y={120} delay={0.1} />
+            <div style={{ position: 'absolute', left: 540, top: 540,
+              transform: `translate(-50%, -50%) scale(${numScale})`,
+              fontFamily: FONT_DISPLAY, fontSize: 520, fontWeight: 900,
+              color: P.magenta, letterSpacing: '-0.06em', lineHeight: 0.85,
+              textShadow: `0 0 120px ${P.magenta}AA, 0 0 40px ${P.magenta}` }}>6</div>
+            <div style={{ position: 'absolute', left: 540, top: 800,
+              transform: 'translate(-50%, -50%)', opacity: numT,
+              fontFamily: FONT_MONO, fontSize: 24, color: P.ink2,
+              letterSpacing: '0.2em', textTransform: 'uppercase' }}>недель</div>
+            <div style={{ position: 'absolute', left: 900, top: 540,
+              transform: `translate(-50%, -50%) scaleX(${Easing.easeOutCubic(arrowT)})`,
+              transformOrigin: 'left center', width: 120, height: 6,
+              background: `linear-gradient(90deg, ${P.magenta}, ${P.cyan})`,
+              borderRadius: 3, boxShadow: `0 0 20px ${P.magenta}` }} />
+            <div style={{ position: 'absolute', left: 1040, top: 540,
+              transform: `translate(-50%, -50%) scale(${arrowT})`, opacity: arrowT,
+              width: 0, height: 0, borderLeft: `24px solid ${P.cyan}`,
+              borderTop: '18px solid transparent', borderBottom: '18px solid transparent',
+              filter: `drop-shadow(0 0 12px ${P.cyan})` }} />
+            {brainT > 0 && (
+              <div style={{ position: 'absolute', left: 1480, top: 540,
+                transform: `translate(-50%, -50%) scale(${0.9 + Easing.easeOutBack(brainT) * 0.1})`,
+                opacity: brainT, textAlign: 'center' }}>
+                <div style={{ fontFamily: FONT_DISPLAY, fontSize: 96, fontWeight: 800,
+                  color: P.ink, letterSpacing: '-0.04em', lineHeight: 0.95,
+                  whiteSpace: 'nowrap', textShadow: `0 0 60px ${P.cyan}66` }}>
+                  цифровой<br/>мозг<br/>эксперта
+                </div>
+              </div>
+            )}
+            {brainT > 0.5 && <NeuralMini x={1480} y={840} opacity={brainT} />}
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+function NeuralMini({ x, y, opacity = 1 }) {
+  const t = useTime();
+  const nodes = [[0,0],[-70,-40],[70,-40],[-70,40],[70,40],[-120,0],[120,0]];
+  return (
+    <div style={{ position: 'absolute', left: x, top: y,
+      transform: 'translate(-50%, -50%)', opacity, width: 300, height: 120 }}>
+      <svg width="300" height="120" style={{ overflow: 'visible' }}>
+        <g transform="translate(150 60)">
+          {nodes.map(([nx,ny],i) =>
+            nodes.slice(i+1).map(([mx,my],j) => (
+              <line key={`l-${i}-${j}`} x1={nx} y1={ny} x2={mx} y2={my}
+                stroke={P.violet} strokeOpacity={0.18 + 0.12 * Math.sin(t*2+i)} strokeWidth="1" />
+            ))
+          )}
+          {nodes.map(([nx,ny],i) => (
+            <circle key={`n-${i}`} cx={nx} cy={ny} r={4 + Math.sin(t*3+i)*1.2}
+              fill={i%2 ? P.cyan : P.violet}
+              style={{ filter: `drop-shadow(0 0 6px ${i%2 ? P.cyan : P.violet})` }} />
+          ))}
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+// ── scenes_slice.jsx ────────────────────────────────────────────────────────
+
+function puzzlePath(pw, ph, m, col, row, cols, rows) {
+  const tw = 60, bh = 28, co = bh * 1.32;
+  const x0 = m, y0 = m, x1 = m + pw, y1 = m + ph;
+  const mxA = x0 + pw/2 - tw/2, mxB = x0 + pw/2 + tw/2;
+  const myA = y0 + ph/2 - tw/2, myB = y0 + ph/2 + tw/2;
+  const hasTop = row > 0, hasRight = col < cols-1, hasBottom = row < rows-1, hasLeft = col > 0;
+  let d = `M ${x0} ${y0}`;
+  d += ` L ${mxA} ${y0}`;
+  if (hasTop) d += ` C ${mxA} ${y0+co}, ${mxB} ${y0+co}, ${mxB} ${y0}`;
+  d += ` L ${x1} ${y0} L ${x1} ${myA}`;
+  if (hasRight) d += ` C ${x1+co} ${myA}, ${x1+co} ${myB}, ${x1} ${myB}`;
+  d += ` L ${x1} ${y1} L ${mxB} ${y1}`;
+  if (hasBottom) d += ` C ${mxB} ${y1+co}, ${mxA} ${y1+co}, ${mxA} ${y1}`;
+  d += ` L ${x0} ${y1} L ${x0} ${myB}`;
+  if (hasLeft) d += ` C ${x0+co} ${myB}, ${x0+co} ${myA}, ${x0} ${myA}`;
+  d += ` L ${x0} ${y0} Z`;
+  return d;
+}
+
+function SceneSlice() {
+  return (
+    <Sprite start={4.5} end={11.5}>
+      {({ localTime }) => {
+        const mix = (a, b, t) => a + (b - a) * t;
+        const enterT = clamp(localTime / 0.7, 0, 1);
+        const enterEase = Easing.easeOutBack(enterT);
+        const wobble = Math.sin(localTime * 5) * 10 * clamp(1 - localTime / 1.6, 0, 1);
+        const kEnterT = clamp((localTime - 0.5) / 1.1, 0, 1);
+        let knifeX, knifeY, knifeRot, knifeOpacity = 1;
+        if (localTime < 1.6) {
+          knifeX = mix(2300, 1500, Easing.easeOutCubic(kEnterT));
+          knifeY = mix(-260, 220, Easing.easeOutCubic(kEnterT));
+          knifeRot = mix(-55, -32, Easing.easeOutCubic(kEnterT));
+        } else if (localTime < 2.1) {
+          const sp = (localTime - 1.6) / 0.5, e = Easing.easeInCubic(sp);
+          knifeX = mix(1500, 380, e); knifeY = mix(220, 940, e); knifeRot = -32;
+        } else if (localTime < 2.7) {
+          const ep = (localTime - 2.1) / 0.6;
+          knifeX = mix(380, 60, ep); knifeY = mix(940, 1500, ep); knifeRot = -32; knifeOpacity = 1 - ep;
+        } else { knifeOpacity = 0; knifeX = 0; knifeY = 0; knifeRot = -32; }
+        const cut = localTime >= 1.85;
+        const scatterT = clamp((localTime - 1.85) / 1.35, 0, 1);
+        const scatterEase = Easing.easeOutQuad(scatterT);
+        const assembleT = clamp((localTime - 3.3) / 1.7, 0, 1);
+        const assembleEase = Easing.easeInOutCubic(assembleT);
+        const sloganT = clamp((localTime - 4.6) / 0.9, 0, 1);
+        const sloganEase = Easing.easeOutCubic(sloganT);
+        const pieces = [
+          { label: 'Контент',    num: '01', c: P.magenta, gx: 0, gy: 0, sx: 240,  sy: 120,  sr: -22 },
+          { label: 'Запуск',     num: '02', c: P.cyan,    gx: 1, gy: 0, sx: 1620, sy: 90,   sr: 28  },
+          { label: 'Воронка',    num: '03', c: P.violet,  gx: 2, gy: 0, sx: 1820, sy: 540,  sr: 42  },
+          { label: 'Прогрев',    num: '04', c: P.pink,    gx: 0, gy: 1, sx: 120,  sy: 720,  sr: -38 },
+          { label: 'AI-команда', num: '05', c: P.lime,    gx: 1, gy: 1, sx: 970,  sy: 1020, sr: 12  },
+          { label: 'Продажи',    num: '06', c: P.hotpink, gx: 2, gy: 1, sx: 1720, sy: 880,  sr: -28 },
+        ];
+        const pw = 320, ph = 210, gap = 0, margin = 36;
+        const gridW = 3 * pw, gridH = 2 * ph;
+        const gridLeft = 960 - gridW / 2, gridTop = 310;
+        const labelOp = clamp(localTime / 0.4, 0, 1) * (1 - clamp((localTime - 6.2) / 0.8, 0, 1));
+        return (
+          <div style={{ position: 'absolute', inset: 0 }}>
+            <div style={{ position: 'absolute', left: 120, top: 120, opacity: labelOp,
+              fontFamily: FONT_MONO, fontSize: 13, color: P.hotpink,
+              letterSpacing: '0.3em', textTransform: 'uppercase' }}>
+              <span style={{ color: P.ink3 }}>SLOGAN /</span>&nbsp;&nbsp;Метод Даши
+            </div>
+            {!cut && (
+              <div style={{ position: 'absolute', left: 960, top: 540,
+                transform: `translate(-50%, -50%) translateY(${wobble}px) scale(${0.4 + enterEase * 0.6})`,
+                opacity: enterT, width: 560, height: 560, pointerEvents: 'none' }}>
+                <div style={{ position: 'absolute', inset: 0,
+                  background: `radial-gradient(circle at 35% 28%, #FFB4D6 0%, ${P.hotpink} 35%, ${P.magenta} 70%, ${P.violet} 100%)`,
+                  borderRadius: '58% 42% 62% 38% / 48% 60% 40% 52%',
+                  boxShadow: `0 30px 80px rgba(0,0,0,0.4), 0 0 140px ${P.hotpink}99, inset -40px -50px 100px rgba(0,0,0,0.3), inset 30px 30px 80px rgba(255,255,255,0.18)`,
+                  animation: 'sliceBlobMorph 3s ease-in-out infinite' }} />
+                {[{ txt:'посты',x:-10,y:30,rot:-14 },{ txt:'офферы',x:410,y:80,rot:12 },
+                  { txt:'созвоны',x:-50,y:360,rot:-8 },{ txt:'reels',x:420,y:380,rot:18 },
+                  { txt:'TG / MAX',x:200,y:-20,rot:-4 },{ txt:'воронка',x:200,y:580,rot:6 },
+                  { txt:'прогрев',x:470,y:240,rot:-16 },{ txt:'AI-агенты',x:-70,y:200,rot:8 }
+                ].map((l,i) => (
+                  <div key={i} style={{ position: 'absolute', left: l.x, top: l.y,
+                    transform: `rotate(${l.rot}deg)`, fontFamily: FONT_MONO, fontSize: 16,
+                    fontWeight: 700, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.12em',
+                    whiteSpace: 'nowrap', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>{l.txt}</div>
+                ))}
+                <div style={{ position: 'absolute', left: '50%', top: '50%',
+                  transform: 'translate(-50%, -50%) rotate(-3deg)',
+                  fontFamily: FONT_DISPLAY, fontSize: 96, fontWeight: 900,
+                  color: '#fff', letterSpacing: '-0.04em',
+                  textShadow: '0 8px 30px rgba(0,0,0,0.5), 0 0 30px rgba(255,255,255,0.3)',
+                  whiteSpace: 'nowrap' }}>хаос</div>
+                <div style={{ position: 'absolute', left: '22%', top: '18%',
+                  width: 120, height: 70,
+                  background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.7) 0%, transparent 70%)',
+                  borderRadius: '50%', filter: 'blur(8px)' }} />
+              </div>
+            )}
+            {knifeOpacity > 0 && localTime > 0.5 && localTime < 2.7 && (() => {
+              const trailPts = [];
+              for (let k = 0; k < 6; k++) {
+                const tk = localTime - k * 0.05;
+                if (tk < 0.5) continue;
+                let tx, ty;
+                if (tk < 1.6) {
+                  const ke = clamp((tk - 0.5) / 1.1, 0, 1);
+                  tx = mix(2300, 1500, Easing.easeOutCubic(ke)); ty = mix(-260, 220, Easing.easeOutCubic(ke));
+                } else if (tk < 2.1) {
+                  const sp = (tk - 1.6) / 0.5, e = Easing.easeInCubic(sp);
+                  tx = mix(1500, 380, e); ty = mix(220, 940, e);
+                } else {
+                  const ep = (tk - 2.1) / 0.6;
+                  tx = mix(380, 60, ep); ty = mix(940, 1500, ep);
+                }
+                trailPts.push({ x: tx, y: ty, op: (1 - k/6) * 0.55 * knifeOpacity });
+              }
+              return trailPts.map((p,i) => (
+                <div key={i} style={{ position: 'absolute', left: p.x, top: p.y,
+                  transform: 'translate(-50%, -50%)', width: 80-i*8, height: 80-i*8,
+                  borderRadius: '50%',
+                  background: `radial-gradient(circle, ${P.hotpink}cc 0%, ${P.magenta}77 40%, transparent 70%)`,
+                  filter: 'blur(8px)', opacity: p.op, pointerEvents: 'none' }} />
+              ));
+            })()}
+            {cut && pieces.map((p, i) => {
+              const targetX = gridLeft + p.gx * pw + pw/2;
+              const targetY = gridTop  + p.gy * ph + ph/2;
+              let x, y, rot, scale;
+              if (assembleT <= 0) {
+                x = mix(960, p.sx, scatterEase); y = mix(540, p.sy, scatterEase);
+                rot = mix(0, p.sr, scatterEase); scale = mix(0.5, 0.95, scatterEase);
+              } else {
+                x = mix(p.sx, targetX, assembleEase); y = mix(p.sy, targetY, assembleEase);
+                rot = mix(p.sr, 0, assembleEase); scale = mix(0.95, 1, assembleEase);
+              }
+              const land = clamp((localTime - (3.3 + 1.5)) / 0.4, 0, 1);
+              if (land > 0 && assembleT >= 1) scale += Math.sin(land * Math.PI) * 0.04 * (1 - land);
+              const op = scatterT < 0.15 ? scatterT / 0.15 : 1;
+              const W = pw + 2*margin, H = ph + 2*margin;
+              const path = puzzlePath(pw, ph, margin, p.gx, p.gy, 3, 2);
+              const gradId = `puzGrad-${i}`;
+              return (
+                <div key={i} style={{ position: 'absolute', left: x, top: y,
+                  transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${scale})`,
+                  width: W, height: H, opacity: op, pointerEvents: 'none' }}>
+                  <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}
+                    style={{ position: 'absolute', inset: 0, overflow: 'visible',
+                      filter: `drop-shadow(0 14px 28px rgba(0,0,0,0.35)) drop-shadow(0 0 14px ${p.c}55)` }}>
+                    <defs>
+                      <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.22" />
+                        <stop offset="40%"  stopColor={p.c} stopOpacity="0.95" />
+                        <stop offset="100%" stopColor={p.c} stopOpacity="1" />
+                      </linearGradient>
+                      <radialGradient id={`${gradId}-hl`} cx="30%" cy="22%" r="55%">
+                        <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.22" />
+                        <stop offset="60%"  stopColor="#ffffff" stopOpacity="0.04" />
+                        <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                      </radialGradient>
+                    </defs>
+                    <path d={path} fill={`url(#${gradId})`} stroke="rgba(255,255,255,0.55)" strokeWidth="1.4" />
+                    <path d={path} fill={`url(#${gradId}-hl)`} stroke="none" />
+                  </svg>
+                  <div style={{ position: 'absolute', left: margin, top: margin,
+                    width: pw, height: ph, padding: 22,
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    boxSizing: 'border-box' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ fontFamily: FONT_MONO, fontSize: 12, color: 'rgba(255,255,255,0.85)',
+                        letterSpacing: '0.28em', textShadow: '0 2px 8px rgba(0,0,0,0.35)' }}>{p.num}</div>
+                      <div style={{ width: 12, height: 12, borderRadius: 3, background: '#fff',
+                        boxShadow: '0 0 6px rgba(255,255,255,0.55)' }} />
+                    </div>
+                    <div style={{ fontFamily: FONT_DISPLAY, fontSize: 34, fontWeight: 800,
+                      color: '#fff', letterSpacing: '-0.025em', lineHeight: 1.0,
+                      textShadow: '0 2px 10px rgba(0,0,0,0.35)' }}>{p.label}</div>
+                  </div>
+                </div>
+              );
+            })}
+            {assembleT >= 1 && (() => {
+              const cl = clamp((localTime - 5.0) / 0.5, 0, 1);
+              const pulse = Math.sin(cl * Math.PI);
+              return (
+                <div style={{ position: 'absolute', left: gridLeft + gridW/2, top: gridTop + gridH/2,
+                  width: gridW + 80, height: gridH + 80, transform: 'translate(-50%, -50%)',
+                  borderRadius: 30, pointerEvents: 'none', opacity: pulse * 0.22,
+                  background: `radial-gradient(ellipse at center, ${P.hotpink}22 0%, transparent 70%)`,
+                  filter: 'blur(24px)' }} />
+              );
+            })()}
+            <div style={{ position: 'absolute', left: 960, top: 970,
+              transform: `translate(-50%, -50%) translateY(${(1 - sloganEase) * 24}px)`,
+              opacity: sloganT, width: 1620,
+              fontFamily: FONT_DISPLAY, fontSize: 42, fontWeight: 700,
+              color: P.ink, letterSpacing: '-0.02em', lineHeight: 1.4,
+              textAlign: 'center', textWrap: 'balance' }}>
+              <span style={{ background: `linear-gradient(90deg, ${P.hotpink}, ${P.magenta})`,
+                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+                textShadow: `0 0 40px ${P.hotpink}55` }}>Режу хаос на кусочки</span>{'  '}
+              <span style={{ color: P.ink2 }}>и собираю в</span>{'  '}
+              <span style={{ background: `linear-gradient(90deg, ${P.cyan}, ${P.lime})`,
+                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>бизнес-систему</span>,
+              {'  '}<span style={{ color: P.ink2 }}>которая</span>{' '}
+              <span style={{ color: P.ink, fontStyle: 'italic' }}>продаёт.</span>
+            </div>
+            <div style={{ position: 'absolute', left: 110, top: 820, opacity: sloganT * 0.4,
+              fontFamily: FONT_DISPLAY, fontSize: 220, fontWeight: 900, color: P.hotpink, lineHeight: 0.7,
+              transform: `translateY(${(1 - sloganEase) * 20}px)` }}>«</div>
+            <div style={{ position: 'absolute', right: 110, bottom: 90, opacity: sloganT * 0.4,
+              fontFamily: FONT_DISPLAY, fontSize: 220, fontWeight: 900, color: P.cyan, lineHeight: 0.7,
+              transform: `translateY(${(1 - sloganEase) * 20}px)` }}>»</div>
+            {knifeOpacity > 0 && (
+              <div style={{ position: 'absolute', left: knifeX, top: knifeY,
+                transform: `translate(-50%, -50%) rotate(${knifeRot}deg)`,
+                opacity: knifeOpacity, pointerEvents: 'none',
+                filter: 'drop-shadow(0 14px 30px rgba(0,0,0,0.6))' }}>
+                <svg viewBox="0 0 620 200" width="620" height="200" style={{ overflow: 'visible' }}>
+                  <defs>
+                    <linearGradient id="bladeGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%"   stopColor="#ffffff"/>
+                      <stop offset="30%"  stopColor="#f1f2f5"/>
+                      <stop offset="55%"  stopColor="#c9cbd1"/>
+                      <stop offset="85%"  stopColor="#8a8d96"/>
+                      <stop offset="100%" stopColor="#54565d"/>
+                    </linearGradient>
+                    <linearGradient id="bladeShine" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.95"/>
+                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0"/>
+                    </linearGradient>
+                    <linearGradient id="handleGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%"   stopColor="#3a2a1f"/>
+                      <stop offset="50%"  stopColor="#1f140d"/>
+                      <stop offset="100%" stopColor="#0d0807"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M 4 110 Q 90 90, 220 78 Q 340 70, 410 96 L 410 138 Q 320 142, 200 138 Q 90 134, 4 122 Z" fill="url(#bladeGrad)" />
+                  <path d="M 4 110 Q 90 90, 220 78 Q 340 70, 410 96" stroke="#ffffff" strokeWidth="2" fill="none" />
+                  <path d="M 30 100 Q 130 88, 260 84 Q 340 84, 390 100" stroke="url(#bladeShine)" strokeWidth="6" fill="none" opacity="0.8" />
+                  <path d="M 4 122 Q 100 132, 220 138 Q 320 142, 410 138" stroke="#9095a0" strokeWidth="1.5" fill="none" opacity="0.6" />
+                  <rect x="408" y="72" width="22" height="80" rx="3" fill="#2a2a32" />
+                  <rect x="410" y="74" width="4"  height="76" fill="#5a5a64" opacity="0.6" />
+                  <path d="M 430 78 Q 580 84, 605 112 Q 612 138, 590 154 Q 560 162, 430 150 Z" fill="url(#handleGrad)" />
+                  <path d="M 440 88 Q 560 92, 595 112" stroke="#5a3e2a" strokeWidth="1.5" fill="none" opacity="0.7" />
+                  <circle cx="470" cy="118" r="5" fill="#7a7a85" /><circle cx="470" cy="118" r="2" fill="#3a3a44" />
+                  <circle cx="520" cy="122" r="5" fill="#7a7a85" /><circle cx="520" cy="122" r="2" fill="#3a3a44" />
+                  <circle cx="570" cy="126" r="4" fill="#7a7a85" /><circle cx="570" cy="126" r="1.5" fill="#3a3a44" />
+                </svg>
+              </div>
+            )}
+            {cut && localTime < 3.5 && (() => {
+              const dripT = clamp((localTime - 1.95) / 1.0, 0, 1);
+              return [0,1,2,3].map(i => (
+                <div key={i} style={{ position: 'absolute',
+                  left: 760 + i * 110, top: 540 + dripT * (200 + i * 30),
+                  width: 6 + i%2*2, height: 18 + i%3*6,
+                  background: `radial-gradient(ellipse at center, ${P.hotpink}, ${P.magenta})`,
+                  borderRadius: '50% 50% 50% 50% / 30% 30% 70% 70%',
+                  opacity: (1 - dripT) * 0.8, filter: 'blur(0.5px)',
+                  boxShadow: `0 0 12px ${P.hotpink}88`, pointerEvents: 'none' }} />
+              ));
+            })()}
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+// ── scenes2.jsx ─────────────────────────────────────────────────────────────
+
+function ScenePain() {
+  return (
+    <Sprite start={17.5} end={24}>
+      {({ localTime }) => {
+        const exitT = clamp((localTime - 5.5) / 1.0, 0, 1);
+        const exitOp = 1 - Easing.easeInCubic(exitT);
+        const headT = clamp(localTime / 0.6, 0, 1);
+        return (
+          <div style={{ position: 'absolute', inset: 0, opacity: exitOp }}>
+            <KeyValue label="Знакомо?" x={120} y={120} delay={0.1} color={P.magenta} />
+            <div style={{ position: 'absolute', left: 120, top: 180, opacity: headT,
+              transform: `translateY(${(1 - Easing.easeOutCubic(headT)) * 20}px)`,
+              fontFamily: FONT_DISPLAY, fontSize: 88, fontWeight: 800,
+              color: P.ink, letterSpacing: '-0.04em', lineHeight: 1.0 }}>
+              Запуск каждый раз<br />
+              <span style={{ color: P.magenta }}>как пожар.</span>
+            </div>
+            {(() => {
+              const t = clamp((localTime - 1.0) / 0.8, 0, 1);
+              const e = Easing.easeOutBack(t);
+              const bob = Math.sin(localTime * 1.6) * 8;
+              const tilt = Math.sin(localTime * 1.1) * 3;
+              return (
+                <div style={{ position: 'absolute', left: 380, top: 770, opacity: t,
+                  transform: `translate(-50%, -50%) translateY(${bob}px) rotate(${-12 + tilt}deg) scale(${e * 1.55})`,
+                  pointerEvents: 'none',
+                  filter: `drop-shadow(0 22px 40px ${P.hotpink}55) drop-shadow(0 0 30px ${P.magenta}66)` }}>
+                  <svg width="360" height="360" viewBox="-180 -180 360 360" style={{ overflow: 'visible' }}>
+                    <defs>
+                      <linearGradient id="chiliBody" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%"   stopColor="#FFB4C8" />
+                        <stop offset="35%"  stopColor={P.hotpink} />
+                        <stop offset="100%" stopColor={P.magenta} />
+                      </linearGradient>
+                      <linearGradient id="chiliStem" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%"  stopColor="#7CD46A" />
+                        <stop offset="100%" stopColor="#2E8F3A" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M -70 -110 C -50 -130, 40 -130, 70 -90 C 110 -30, 80 80, 30 130 C 0 155, -40 150, -50 110 C -70 50, -100 -20, -90 -70 C -86 -90, -80 -100, -70 -110 Z"
+                      fill="url(#chiliBody)" stroke="#A21158" strokeWidth="2" strokeOpacity="0.45" />
+                    <path d="M -78 -108 C -60 -132, 30 -148, 58 -118 C 50 -100, 30 -94, 10 -104 C -20 -118, -55 -120, -78 -108 Z"
+                      fill="url(#chiliStem)" stroke="#1F6A29" strokeWidth="2" />
+                    <path d="M 0 -125 C 6 -160, 18 -170, 40 -168" fill="none" stroke="#1F6A29" strokeWidth="7" strokeLinecap="round" />
+                    <path d="M 0 -125 C 6 -160, 18 -170, 40 -168" fill="none" stroke="#7CD46A" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                </div>
+              );
+            })()}
+            {[
+              { txt: 'контент придумываешь вручную', x: 1320, y: 240, delay: 0.6,  c: P.magenta },
+              { txt: 'Telegram и MAX живут отдельно', x: 1480, y: 380, delay: 0.85, c: P.cyan    },
+              { txt: 'непонятно, куда вести людей',   x: 1340, y: 520, delay: 1.1,  c: P.pink    },
+              { txt: 'офферы каждый раз с нуля',      x: 1500, y: 660, delay: 1.35, c: P.magenta },
+              { txt: 'всё держится на тебе',           x: 1360, y: 800, delay: 1.6,  c: P.lime    },
+              { txt: 'продаж больше — выгорания тоже',x: 1420, y: 940, delay: 1.85, c: P.hotpink },
+            ].map((b, i) => {
+              const t = clamp((localTime - b.delay) / 0.5, 0, 1);
+              const ease = Easing.easeOutBack(t);
+              return (
+                <div key={i} style={{ position: 'absolute', left: b.x, top: b.y,
+                  transform: `translate(-50%, -50%) scale(${ease}) rotate(${(i%2?1:-1)*1.5}deg)`,
+                  opacity: t, padding: '14px 22px', borderRadius: 14,
+                  background: `${b.c}10`, border: `1.5px solid ${b.c}55`, color: P.ink,
+                  fontFamily: FONT_BODY, fontSize: 22, fontWeight: 500,
+                  whiteSpace: 'nowrap', boxShadow: `0 0 30px ${b.c}22`, backdropFilter: 'blur(4px)' }}>
+                  {b.txt}
+                </div>
+              );
+            })}
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+function SceneFiveBuys() {
+  return (
+    <Sprite start={24} end={32}>
+      {({ localTime }) => {
+        const exitT = clamp((localTime - 7) / 1.0, 0, 1);
+        const exitOp = 1 - Easing.easeInCubic(exitT);
+        const headT = clamp(localTime / 0.5, 0, 1);
+        const items = [
+          { n: '01', t: 'Кратный рост продаж',    s: 'запуск собран в систему' },
+          { n: '02', t: 'Освобождение времени',    s: 'не залипаешь в рутине' },
+          { n: '03', t: 'AI-команда',              s: 'не одиночный ChatGPT' },
+          { n: '04', t: 'Связку площадок',         s: 'TG, MAX, Threads, Reels в одну воронку' },
+          { n: '05', t: 'Взгляд продюсера',        s: 'выходишь из замыленности' },
+        ];
+        return (
+          <div style={{ position: 'absolute', inset: 0, opacity: exitOp }}>
+            <KeyValue label="Что покупает аудитория" x={120} y={120} delay={0.1} />
+            <div style={{ position: 'absolute', left: 120, top: 180, opacity: headT,
+              transform: `translateY(${(1 - Easing.easeOutCubic(headT)) * 20}px)`,
+              fontFamily: FONT_DISPLAY, fontSize: 76, fontWeight: 800,
+              color: P.ink, letterSpacing: '-0.04em', lineHeight: 1.0 }}>
+              5 вещей, которые<br />
+              <span style={{ background: `linear-gradient(90deg, ${P.violet}, ${P.cyan})`,
+                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
+                покупают на самом деле
+              </span>
+            </div>
+            {items.map((item, i) => {
+              const delay = 0.8 + i * 0.35;
+              const t = clamp((localTime - delay) / 0.5, 0, 1);
+              const ease = Easing.easeOutCubic(t);
+              return (
+                <div key={i} style={{ position: 'absolute', left: 120, top: 480 + i * 105,
+                  transform: `translateX(${(1 - ease) * -40}px)`, opacity: t,
+                  display: 'flex', alignItems: 'baseline', gap: 28 }}>
+                  <span style={{ fontFamily: FONT_MONO, fontSize: 36, fontWeight: 700,
+                    color: P.violet, letterSpacing: '-0.02em' }}>{item.n}</span>
+                  <span style={{ fontFamily: FONT_DISPLAY, fontSize: 48, fontWeight: 700,
+                    color: P.ink, letterSpacing: '-0.025em' }}>{item.t}</span>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: 22, color: P.ink2, fontWeight: 400 }}>{item.s}</span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+function SceneSixModules() {
+  return (
+    <Sprite start={32} end={40}>
+      {({ localTime }) => {
+        const exitT = clamp((localTime - 7) / 1.0, 0, 1);
+        const exitOp = 1 - Easing.easeInCubic(exitT);
+        const headT = clamp(localTime / 0.5, 0, 1);
+        const modules = [
+          { t: 'AI-штаб запуска',    s: 'структура, дедлайны, материалы',   c: P.magenta },
+          { t: 'AI-команда',         s: '9 агентов под задачи',              c: P.cyan    },
+          { t: 'Операционка',        s: 'кто что делает, когда',             c: P.pink    },
+          { t: 'Контент-движок',     s: 'мысли → посты, прогревы, reels',   c: P.violet  },
+          { t: 'Связка площадок',    s: 'TG, MAX, Threads → маршрут',       c: P.lime    },
+          { t: 'Технический AI-штаб',s: 'упаковка, офферы, визуалы, CTA',   c: P.hotpink },
+        ];
+        return (
+          <div style={{ position: 'absolute', inset: 0, opacity: exitOp }}>
+            <KeyValue label="Из чего состоит цифровой мозг" x={120} y={120} delay={0.1} color={P.cyan} />
+            <div style={{ position: 'absolute', left: 120, top: 180, opacity: headT,
+              transform: `translateY(${(1 - Easing.easeOutCubic(headT)) * 20}px)`,
+              fontFamily: FONT_DISPLAY, fontSize: 76, fontWeight: 800,
+              color: P.ink, letterSpacing: '-0.04em', lineHeight: 1.0 }}>6 модулей.</div>
+            {modules.map((m, i) => {
+              const col = i % 3, row = Math.floor(i / 3);
+              const delay = 0.6 + i * 0.18;
+              const t = clamp((localTime - delay) / 0.5, 0, 1);
+              const ease = Easing.easeOutBack(t);
+              return (
+                <div key={i} style={{ position: 'absolute',
+                  left: 110 + col * 600, top: 420 + row * 290,
+                  width: 520, height: 240,
+                  transform: `scale(${0.85 + ease * 0.15})`, opacity: t,
+                  borderRadius: 24, padding: '32px 36px',
+                  background: `linear-gradient(135deg, ${m.c}1A 0%, rgba(11,11,31,0.6) 60%)`,
+                  border: `1.5px solid ${m.c}55`,
+                  boxShadow: `0 20px 60px rgba(0,0,0,0.4), 0 0 40px ${m.c}22`,
+                  backdropFilter: 'blur(8px)' }}>
+                  <div style={{ fontFamily: FONT_MONO, fontSize: 14, color: m.c,
+                    letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 16 }}>0{i+1}</div>
+                  <div style={{ fontFamily: FONT_DISPLAY, fontSize: 44, fontWeight: 700,
+                    color: P.ink, letterSpacing: '-0.025em', marginBottom: 12, lineHeight: 1.0 }}>{m.t}</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: 20, color: P.ink2, lineHeight: 1.35 }}>{m.s}</div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+function SceneAgents() {
+  return (
+    <Sprite start={40} end={50}>
+      {({ localTime }) => {
+        const exitT = clamp((localTime - 9) / 1.0, 0, 1);
+        const exitOp = 1 - Easing.easeInCubic(exitT);
+        const headT = clamp(localTime / 0.5, 0, 1);
+        const agents = [
+          { n: 'AI-продюсер',         r: 'держит структуру запуска',         c: P.magenta, glyph: '✱' },
+          { n: 'AI-упаковщик',        r: 'позиционирование и смыслы',         c: P.cyan,    glyph: '◇' },
+          { n: 'AI-офферолог',        r: 'обещание, выгоды, причины купить',  c: P.pink,    glyph: '◆' },
+          { n: 'AI-контент-редактор', r: 'мысли → посты, прогрев',           c: P.hotpink, glyph: '⌬' },
+          { n: 'AI-адаптер площадок', r: 'один смысл — все каналы',           c: P.lime,    glyph: '⟁' },
+          { n: 'AI-дизайн-ассистент', r: 'визуальный код и ТЗ',              c: P.magenta, glyph: '◐' },
+          { n: 'AI-помощник продаж',  r: 'сценарии лички и возражения',       c: P.cyan,    glyph: '➤' },
+          { n: 'AI-аналитик',         r: 'что работает, что съедает время',   c: P.pink,    glyph: '∿' },
+          { n: 'AI-бренд-хранитель',  r: 'голос и стиль не теряются',         c: P.hotpink, glyph: '✦' },
+        ];
+        return (
+          <div style={{ position: 'absolute', inset: 0, opacity: exitOp }}>
+            <KeyValue label="AI-команда внутри программы" x={120} y={100} delay={0.1} color={P.magenta} />
+            <div style={{ position: 'absolute', left: 120, top: 160, opacity: headT,
+              transform: `translateY(${(1 - Easing.easeOutCubic(headT)) * 20}px)`,
+              fontFamily: FONT_DISPLAY, fontSize: 64, fontWeight: 800,
+              color: P.ink, letterSpacing: '-0.04em', lineHeight: 1.0, whiteSpace: 'nowrap' }}>
+              9 AI-агентов <span style={{ color: P.ink3, fontWeight: 400 }}>под ключ.</span>
+            </div>
+            {agents.map((a, i) => {
+              const col = i % 3, row = Math.floor(i / 3);
+              const delay = 0.5 + (row * 3 + col) * 0.12;
+              const t = clamp((localTime - delay) / 0.5, 0, 1);
+              const ease = Easing.easeOutCubic(t);
+              return (
+                <div key={i} style={{ position: 'absolute',
+                  left: 110 + col * 600, top: 310 + row * 260,
+                  width: 520, height: 210,
+                  transform: `translateY(${(1 - ease) * 30}px)`, opacity: t,
+                  borderRadius: 20, padding: '28px 32px',
+                  background: 'rgba(15,15,40,0.5)', border: `1.5px solid ${a.c}55`,
+                  boxShadow: `0 0 30px ${a.c}1A`, backdropFilter: 'blur(6px)',
+                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ fontFamily: FONT_DISPLAY, fontSize: 32, fontWeight: 700,
+                      color: P.ink, letterSpacing: '-0.025em', lineHeight: 1.05 }}>{a.n}</div>
+                    <div style={{ fontFamily: FONT_DISPLAY, fontSize: 48, color: a.c, lineHeight: 1,
+                      textShadow: `0 0 16px ${a.c}` }}>{a.glyph}</div>
+                  </div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: 18, color: P.ink2, lineHeight: 1.35 }}>{a.r}</div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+function SceneWeeks() {
+  return (
+    <Sprite start={50} end={62}>
+      {({ localTime }) => {
+        const exitT = clamp((localTime - 11) / 1.0, 0, 1);
+        const exitOp = 1 - Easing.easeInCubic(exitT);
+        const headT = clamp(localTime / 0.5, 0, 1);
+        const weeks = [
+          { t: 'Диагностика',     s: 'где теряются деньги, время и заявки', c: P.magenta },
+          { t: 'Операционка',     s: 'собираем систему, а не хаос',          c: P.cyan    },
+          { t: 'Технический AI-штаб', s: 'закрываем головную боль запуска', c: P.pink    },
+          { t: 'Бренд-код',       s: 'чтобы AI не убил ваш голос',          c: P.hotpink },
+          { t: 'Связка площадок', s: 'TG, MAX и другие — в одну систему',   c: P.lime    },
+          { t: 'Прогрев и продажи', s: 'плюс план масштабирования',         c: P.magenta },
+        ];
+        return (
+          <div style={{ position: 'absolute', inset: 0, opacity: exitOp }}>
+            <KeyValue label="План на 6 недель" x={120} y={100} delay={0.1} color={P.amber} />
+            <div style={{ position: 'absolute', left: 120, top: 160, opacity: headT,
+              transform: `translateY(${(1 - Easing.easeOutCubic(headT)) * 20}px)`,
+              fontFamily: FONT_DISPLAY, fontSize: 72, fontWeight: 800,
+              color: P.ink, letterSpacing: '-0.04em', lineHeight: 1.0 }}>
+              От хаоса <span style={{ color: P.amber }}>→</span> к системе за 6 недель.
+            </div>
+            <div style={{ position: 'absolute', left: 180, top: 580, width: 1560, height: 4,
+              background: `linear-gradient(90deg, ${P.violet}55, ${P.cyan}55, ${P.magenta}55, ${P.amber}55, ${P.lime}55, ${P.violet}55)`,
+              borderRadius: 2,
+              transform: `scaleX(${Easing.easeOutCubic(clamp(localTime / 1.5, 0, 1))})`,
+              transformOrigin: 'left' }} />
+            {weeks.map((w, i) => {
+              const delay = 0.6 + i * 0.4;
+              const t = clamp((localTime - delay) / 0.6, 0, 1);
+              const ease = Easing.easeOutBack(t);
+              const cx = 245 + i * 286;
+              return (
+                <div key={i}>
+                  <div style={{ position: 'absolute', left: cx, top: 580,
+                    transform: `translate(-50%, -50%) scale(${ease})`,
+                    width: 28, height: 28, borderRadius: '50%', background: w.c,
+                    boxShadow: `0 0 24px ${w.c}, 0 0 4px ${w.c}`, opacity: t }} />
+                  <div style={{ position: 'absolute', left: cx, top: 660,
+                    transform: `translate(-50%, 0) translateY(${(1 - ease) * 30}px)`,
+                    opacity: t, width: 230, padding: '20px 20px', borderRadius: 14,
+                    background: `linear-gradient(180deg, ${w.c}1A 0%, rgba(11,11,31,0.4) 100%)`,
+                    border: `1.5px solid ${w.c}66` }}>
+                    <div style={{ fontFamily: FONT_MONO, fontSize: 12, color: w.c,
+                      letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 10 }}>WEEK 0{i+1}</div>
+                    <div style={{ fontFamily: FONT_DISPLAY, fontSize: 24, fontWeight: 700,
+                      color: P.ink, letterSpacing: '-0.02em', marginBottom: 8, lineHeight: 1.05 }}>{w.t}</div>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: 14, color: P.ink2, lineHeight: 1.35 }}>{w.s}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+function SceneOutcomes() {
+  return (
+    <Sprite start={62} end={69}>
+      {({ localTime }) => {
+        const exitT = clamp((localTime - 6) / 1.0, 0, 1);
+        const exitOp = 1 - Easing.easeInCubic(exitT);
+        const headT = clamp(localTime / 0.5, 0, 1);
+        const chips = [
+          { t: 'цифровой мозг',            x: 480,  y: 480, c: P.violet  },
+          { t: 'AI-команда',               x: 760,  y: 410, c: P.cyan    },
+          { t: 'операционная карта',        x: 1100, y: 460, c: P.magenta },
+          { t: 'технический AI-штаб',       x: 1480, y: 410, c: P.amber   },
+          { t: 'бренд-код',                 x: 360,  y: 600, c: P.lime    },
+          { t: 'связка площадок',           x: 720,  y: 580, c: P.violet  },
+          { t: 'контент-система',           x: 1120, y: 620, c: P.cyan    },
+          { t: 'прогрев под платёжку',      x: 1500, y: 580, c: P.magenta },
+          { t: 'офферы + продажные тексты', x: 480,  y: 760, c: P.amber   },
+          { t: 'сценарии лички',            x: 880,  y: 740, c: P.lime    },
+          { t: 'таблица метрик',            x: 1240, y: 780, c: P.violet  },
+          { t: 'план следующего запуска',   x: 1620, y: 740, c: P.cyan    },
+        ];
+        return (
+          <div style={{ position: 'absolute', inset: 0, opacity: exitOp }}>
+            <KeyValue label="На выходе" x={120} y={120} delay={0.1} color={P.lime} />
+            <div style={{ position: 'absolute', left: 120, top: 180, opacity: headT,
+              transform: `translateY(${(1 - Easing.easeOutCubic(headT)) * 20}px)`,
+              fontFamily: FONT_DISPLAY, fontSize: 88, fontWeight: 800,
+              color: P.ink, letterSpacing: '-0.04em', lineHeight: 0.95 }}>
+              Выходишь не с конспектом —<br />
+              <span style={{ color: P.lime }}>с системой.</span>
+            </div>
+            {chips.map((c, i) =>
+              <Chip key={i} text={c.t} x={c.x} y={c.y} color={c.c} delay={0.7 + i * 0.18} size={22} />
+            )}
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+function ScenePricing() {
+  return (
+    <Sprite start={69} end={81}>
+      {({ localTime }) => {
+        const exitT = clamp((localTime - 11) / 1.0, 0, 1);
+        const exitOp = 1 - Easing.easeInCubic(exitT);
+        const headT = clamp(localTime / 0.5, 0, 1);
+        const tiers = [
+          {
+            name: 'СТАРТ', price: '50 000', accent: P.pink,
+            tagline: 'для тех, кто хочет систему сам',
+            feats: ['основная программа 6 недель','все материалы и шаблоны',
+              'библиотека из 9 AI-агентов','общие созвоны раз в неделю','чат потока'],
+            badge: null,
+          },
+          {
+            name: 'КОМАНДА', price: '80 000', accent: P.magenta,
+            tagline: 'программа + кураторская поддержка',
+            feats: ['всё из «Старт»','личная обратная связь по запуску',
+              'разборы офферов и упаковки','настройка AI-агентов под ваш проект','личный чат с куратором'],
+            badge: 'РЕКОМЕНДУЕМ',
+          },
+          {
+            name: 'VIP', price: '130 000', accent: P.hotpink,
+            tagline: 'индивидуальное сопровождение Даши',
+            feats: ['всё из «Команда»','4 личные созвоны 1:1 с Дашей',
+              'цифровой мозг под ключ','разбор воронки и связки площадок','месяц поддержки после программы'],
+            badge: 'TOP',
+          },
+        ];
+        return (
+          <div style={{ position: 'absolute', inset: 0, opacity: exitOp }}>
+            <KeyValue label="Тарифы" x={120} y={100} delay={0.1} color={P.violet} />
+            <div style={{ position: 'absolute', left: 120, top: 160, opacity: headT,
+              transform: `translateY(${(1 - Easing.easeOutCubic(headT)) * 20}px)`,
+              fontFamily: FONT_DISPLAY, fontSize: 72, fontWeight: 800,
+              color: P.ink, letterSpacing: '-0.04em', lineHeight: 1.0 }}>3 формата участия.</div>
+            {tiers.map((tier, i) => {
+              const delay = 0.6 + i * 0.35;
+              const t = clamp((localTime - delay) / 0.6, 0, 1);
+              const ease = Easing.easeOutCubic(t);
+              const featured = i === 1;
+              return (
+                <div key={i} style={{ position: 'absolute',
+                  left: 120 + i * 600, top: 320 + (featured ? -20 : 0),
+                  width: 560, height: 740,
+                  transform: `translateY(${(1 - ease) * 50}px) scale(${featured ? 1.02 : 1})`,
+                  opacity: t, borderRadius: 28, padding: '40px 40px',
+                  background: featured
+                    ? `linear-gradient(180deg, ${tier.accent}30 0%, rgba(15,15,40,0.85) 60%)`
+                    : 'rgba(15,15,40,0.5)',
+                  border: `${featured ? 2 : 1.5}px solid ${tier.accent}${featured ? 'CC' : '66'}`,
+                  boxShadow: featured
+                    ? `0 30px 80px rgba(0,0,0,0.5), 0 0 80px ${tier.accent}55`
+                    : `0 20px 50px rgba(0,0,0,0.4)`,
+                  backdropFilter: 'blur(10px)',
+                  display: 'flex', flexDirection: 'column' }}>
+                  {tier.badge && (
+                    <div style={{ position: 'absolute', top: -16, left: 40,
+                      padding: '6px 14px', background: tier.accent, color: P.bg,
+                      borderRadius: 999, fontFamily: FONT_MONO, fontSize: 12, fontWeight: 700,
+                      letterSpacing: '0.18em', boxShadow: `0 0 20px ${tier.accent}` }}>{tier.badge}</div>
+                  )}
+                  <div style={{ fontFamily: FONT_MONO, fontSize: 14, color: tier.accent,
+                    letterSpacing: '0.3em', marginBottom: 14 }}>{tier.name}</div>
+                  <div style={{ fontFamily: FONT_DISPLAY, fontSize: 80, fontWeight: 800,
+                    color: P.ink, letterSpacing: '-0.04em', lineHeight: 1.0 }}>
+                    {tier.price}<span style={{ fontSize: 28, color: P.ink2, marginLeft: 8 }}>₽</span>
+                  </div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: 18, color: P.ink2,
+                    marginTop: 8, marginBottom: 28, lineHeight: 1.3 }}>{tier.tagline}</div>
+                  <div style={{ height: 1, background: `${tier.accent}33`, marginBottom: 24 }} />
+                  <div style={{ flex: 1 }}>
+                    {tier.feats.map((f, j) => (
+                      <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 14,
+                        marginBottom: 16, fontFamily: FONT_BODY, fontSize: 19, color: P.ink, lineHeight: 1.4 }}>
+                        <span style={{ color: tier.accent, fontSize: 22, lineHeight: 1, marginTop: 2 }}>+</span>
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
+                    <a href="https://t.me/dashazapuskai" target="_blank" rel="noopener" style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                      padding: '16px 20px', background: tier.accent, color: P.bg,
+                      borderRadius: 14, fontFamily: FONT_DISPLAY, fontSize: 18, fontWeight: 800,
+                      letterSpacing: '0.04em', textDecoration: 'none',
+                      boxShadow: `0 10px 30px ${tier.accent}66, 0 0 30px ${tier.accent}55`,
+                      transition: 'transform 120ms ease, box-shadow 120ms ease', cursor: 'pointer' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 16px 40px ${tier.accent}99`; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 10px 30px ${tier.accent}66`; }}>
+                      ОПЛАТИТЬ →
+                    </a>
+                    <a href="https://t.me/dashazapuskai" target="_blank" rel="noopener" style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      padding: '12px 20px', background: 'transparent', color: tier.accent,
+                      borderRadius: 14, fontFamily: FONT_MONO, fontSize: 13, fontWeight: 700,
+                      letterSpacing: '0.18em', textDecoration: 'none',
+                      border: `1.5px solid ${tier.accent}66`,
+                      transition: 'background 120ms ease, border-color 120ms ease', cursor: 'pointer' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = `${tier.accent}1A`; e.currentTarget.style.borderColor = tier.accent; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = `${tier.accent}66`; }}>
+                      ПОДРОБНЕЕ В ЛИЧКЕ
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+function SceneCTA() {
+  return (
+    <Sprite start={81} end={89}>
+      {({ localTime }) => {
+        const t1 = clamp(localTime / 0.6, 0, 1);
+        const t2 = clamp((localTime - 0.8) / 0.6, 0, 1);
+        const t3 = clamp((localTime - 1.4) / 0.6, 0, 1);
+        const t4 = clamp((localTime - 2.0) / 0.6, 0, 1);
+        return (
+          <div style={{ position: 'absolute', inset: 0 }}>
+            <div style={{ position: 'absolute', left: 960, top: 240,
+              transform: `translate(-50%, -50%) scale(${0.9 + Easing.easeOutBack(t1) * 0.1})`,
+              opacity: t1, fontFamily: FONT_DISPLAY, fontSize: 140, fontWeight: 900,
+              color: P.ink, letterSpacing: '-0.05em', lineHeight: 0.95,
+              textAlign: 'center', whiteSpace: 'nowrap', textShadow: `0 0 80px ${P.magenta}66` }}>
+              Готов{' '}
+              <span style={{ background: `linear-gradient(90deg, ${P.hotpink}, ${P.magenta}, ${P.cyan})`,
+                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>хакнуть</span>
+              {' '}запуск?
+            </div>
+            <div style={{ position: 'absolute', left: 960, top: 360,
+              transform: 'translate(-50%, -50%)', opacity: t2,
+              fontFamily: FONT_BODY, fontSize: 28, color: P.ink2,
+              letterSpacing: '-0.01em', textAlign: 'center' }}>
+              Два шага — выбери свой.
+            </div>
+            <div style={{ position: 'absolute', left: 960, top: 510,
+              transform: `translate(-50%, -50%) scale(${0.92 + Easing.easeOutBack(t3) * 0.08})`,
+              opacity: t3, display: 'flex', gap: 24, alignItems: 'center' }}>
+              <a href="https://t.me/dashazapuskai" target="_blank" rel="noopener" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
+                padding: '26px 52px',
+                background: `linear-gradient(90deg, ${P.hotpink}, ${P.magenta})`,
+                color: '#fff', borderRadius: 999, fontFamily: FONT_DISPLAY, fontSize: 30, fontWeight: 800,
+                letterSpacing: '-0.01em', textDecoration: 'none',
+                boxShadow: `0 30px 80px ${P.hotpink}88, 0 0 100px ${P.magenta}77`,
+                transition: 'transform 150ms ease, box-shadow 150ms ease', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)'; e.currentTarget.style.boxShadow = `0 40px 100px ${P.hotpink}AA`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = `0 30px 80px ${P.hotpink}88`; }}>
+                <span>ПРИОБРЕСТИ КУРС</span>
+                <span style={{ fontSize: 34, marginTop: -2 }}>→</span>
+              </a>
+              <a href="https://t.me/dahazapuskai" target="_blank" rel="noopener" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+                padding: '24px 44px', background: 'transparent', color: P.cyan,
+                borderRadius: 999, fontFamily: FONT_DISPLAY, fontSize: 26, fontWeight: 700,
+                letterSpacing: '-0.005em', textDecoration: 'none',
+                border: `2px solid ${P.cyan}AA`, boxShadow: `0 0 30px ${P.cyan}33`,
+                transition: 'background 150ms ease, transform 150ms ease', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = `${P.cyan}1F`; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                <span style={{ fontSize: 22, marginTop: -2 }}>▶</span>
+                <span>ПОДПИСАТЬСЯ НА КАНАЛ</span>
+              </a>
+            </div>
+            <div style={{ position: 'absolute', left: 960, top: 680,
+              transform: 'translate(-50%, -50%)', opacity: t4 * 0.6,
+              fontFamily: FONT_MONO, fontSize: 16, color: P.ink3,
+              letterSpacing: '0.3em', textTransform: 'uppercase', textAlign: 'center' }}>
+              ХАКНИ ЗАПУСК С AI · 6 НЕДЕЛЬ · ЦИФРОВОЙ МОЗГ ЭКСПЕРТА
+            </div>
+          </div>
+        );
+      }}
+    </Sprite>
+  );
+}
+
+// ── Blob morph CSS ──────────────────────────────────────────────────────────
+(function() {
+  if (document.getElementById('slice-css')) return;
+  const css = document.createElement('style');
+  css.id = 'slice-css';
+  css.textContent = `
+    @keyframes sliceBlobMorph {
+      0%   { border-radius: 58% 42% 62% 38% / 48% 60% 40% 52%; }
+      33%  { border-radius: 48% 52% 38% 62% / 58% 42% 58% 42%; }
+      66%  { border-radius: 62% 38% 52% 48% / 42% 58% 42% 58%; }
+      100% { border-radius: 58% 42% 62% 38% / 48% 60% 40% 52%; }
+    }
+  `;
+  document.head.appendChild(css);
+})();
+
+// ── Main App ─────────────────────────────────────────────────────────────────
+
 const DURATION = 89;
 
 function TimeLabel() {
@@ -51,24 +1443,21 @@ function TimeLabel() {
 function ProgressDots() {
   const t = useTime();
   const sections = [
-    { start: 0, label: 'HOOK' },
-    { start: 4.5, label: 'SLOGAN' },
+    { start: 0,    label: 'HOOK'    },
+    { start: 4.5,  label: 'SLOGAN'  },
     { start: 11.5, label: 'PROMISE' },
-    { start: 17.5, label: 'PAIN' },
-    { start: 24, label: 'WHY' },
-    { start: 32, label: 'BRAIN' },
-    { start: 40, label: 'AGENTS' },
-    { start: 50, label: 'WEEKS' },
-    { start: 62, label: 'OUTCOME' },
-    { start: 69, label: 'PRICE' },
-    { start: 81, label: 'CTA' },
+    { start: 17.5, label: 'PAIN'    },
+    { start: 24,   label: 'WHY'     },
+    { start: 32,   label: 'BRAIN'   },
+    { start: 40,   label: 'AGENTS'  },
+    { start: 50,   label: 'WEEKS'   },
+    { start: 62,   label: 'OUTCOME' },
+    { start: 69,   label: 'PRICE'   },
+    { start: 81,   label: 'CTA'     },
   ];
   return (
-    <div style={{
-      position: 'absolute', right: 60, top: 60,
-      display: 'flex', gap: 8, alignItems: 'center',
-      zIndex: 10,
-    }}>
+    <div style={{ position: 'absolute', right: 60, top: 60,
+      display: 'flex', gap: 8, alignItems: 'center', zIndex: 10 }}>
       {sections.map((s, i) => {
         const next = sections[i+1] ? sections[i+1].start : DURATION;
         const active = t >= s.start && t < next;
@@ -78,16 +1467,10 @@ function ProgressDots() {
             width: active ? 28 : 8, height: 8,
             background: past ? P.ink3 : active ? P.violet : 'rgba(255,255,255,0.12)',
             boxShadow: active ? `0 0 12px ${P.violet}` : 'none',
-            borderRadius: 4,
-            transition: 'width 300ms, background 300ms',
-          }} />
+            borderRadius: 4, transition: 'width 300ms, background 300ms' }} />
         );
       })}
-      <div style={{
-        marginLeft: 16,
-        fontFamily: FONT_MONO, fontSize: 12, color: P.ink3,
-        letterSpacing: '0.2em',
-      }}>
+      <div style={{ marginLeft: 16, fontFamily: FONT_MONO, fontSize: 12, color: P.ink3, letterSpacing: '0.2em' }}>
         {String(Math.floor(t)).padStart(2,'0')} / {DURATION}
       </div>
     </div>
@@ -96,23 +1479,13 @@ function ProgressDots() {
 
 function BrandMark() {
   return (
-    <div style={{
-      position: 'absolute', left: 60, top: 60,
-      display: 'flex', alignItems: 'center', gap: 12,
-      zIndex: 10,
-    }}>
-      <div style={{
-        width: 12, height: 12, borderRadius: 4,
+    <div style={{ position: 'absolute', left: 60, top: 60,
+      display: 'flex', alignItems: 'center', gap: 12, zIndex: 10 }}>
+      <div style={{ width: 12, height: 12, borderRadius: 4,
         background: `linear-gradient(135deg, ${P.violet}, ${P.cyan})`,
-        boxShadow: `0 0 12px ${P.violet}`,
-      }} />
-      <div style={{
-        fontFamily: FONT_MONO, fontSize: 13,
-        color: P.ink2, letterSpacing: '0.25em',
-        textTransform: 'uppercase',
-      }}>
-        Хакни запуск с AI
-      </div>
+        boxShadow: `0 0 12px ${P.violet}` }} />
+      <div style={{ fontFamily: FONT_MONO, fontSize: 13, color: P.ink2,
+        letterSpacing: '0.25em', textTransform: 'uppercase' }}>Хакни запуск с AI</div>
     </div>
   );
 }
