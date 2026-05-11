@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-110 -160 220 310">
+  <defs>
+    <radialGradient id="b" cx="36%" cy="28%" r="68%">
+      <stop offset="0%" stop-color="#FFB8D5"/>
+      <stop offset="35%" stop-color="#FF4FA0"/>
+      <stop offset="75%" stop-color="#FF1F70"/>
+      <stop offset="100%" stop-color="#C8005C"/>
+    </radialGradient>
+    <linearGradient id="l" x1="0.1" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#8EE07A"/>
+      <stop offset="100%" stop-color="#1E7228"/>
+    </linearGradient>
+  </defs>
+  <!-- Body -->
+  <path d="M 0,-95 C 44,-108, 85,-62, 85,-7 C 85,53, 55,121, 0,139 C -55,121, -85,53, -85,-7 C -85,-62, -44,-108, 0,-95 Z"
+    fill="url(#b)" stroke="#9A0040" stroke-width="2" stroke-opacity="0.3"/>
+  <!-- Highlight -->
+  <ellipse cx="-36" cy="-34" rx="26" ry="36" fill="rgba(255,255,255,0.22)"
+    style="filter:blur(5px)" transform="rotate(-18,-36,-34)"/>
+  <!-- Leaf cap -->
+  <path d="M -68,-89 C -57,-130, 57,-130, 68,-89 C 55,-67, -55,-67, -68,-89 Z"
+    fill="url(#l)" stroke="#155220" stroke-width="2"/>
+  <!-- Stem -->
+  <path d="M 4,-128 C 18,-153, 38,-166, 55,-173"
+    stroke="#155220" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+  <path d="M 4,-128 C 18,-153, 38,-166, 55,-173"
+    stroke="#7CD46A" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+</svg>
