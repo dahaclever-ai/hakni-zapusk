@@ -244,8 +244,8 @@ section { position: relative; }
   cursor: default;
 }
 .chili-flame {
-  animation: flameDance 1.1s ease-in-out infinite;
-  transform-box: fill-box; transform-origin: bottom center;
+  animation: flameDance 1.4s ease-in-out infinite;
+  transform-box: fill-box; transform-origin: center top;
 }
 
 /* ── Puzzle pieces ── */
@@ -658,7 +658,7 @@ footer a:hover { color: var(--ink); }
       </div>
       <!-- Chili pepper -->
       <div class="pain-visual fade-up">
-        <svg class="chili-svg" viewBox="-180 -215 360 415" xmlns="http://www.w3.org/2000/svg">
+        <svg class="chili-svg" viewBox="-180 -215 360 430" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="cBody2" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%"   stop-color="#FFB4C8"/>
@@ -669,17 +669,35 @@ footer a:hover { color: var(--ink); }
               <stop offset="0%"  stop-color="#7CD46A"/>
               <stop offset="100%" stop-color="#2E8F3A"/>
             </linearGradient>
-            <linearGradient id="flameOut" x1="0.4" y1="1" x2="0.5" y2="0">
-              <stop offset="0%" stop-color="#FF1F70"/>
-              <stop offset="55%" stop-color="#FF6FAE"/>
-              <stop offset="100%" stop-color="#FFD0E8" stop-opacity="0.5"/>
-            </linearGradient>
-            <linearGradient id="flameMid" x1="0.4" y1="1" x2="0.5" y2="0">
-              <stop offset="0%" stop-color="#FF3D8F"/>
-              <stop offset="55%" stop-color="#FFAECE"/>
-              <stop offset="100%" stop-color="#fff" stop-opacity="0.85"/>
+            <linearGradient id="fireUp" x1="0" y1="210" x2="0" y2="115"
+              gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#FF1F70" stop-opacity="0.9"/>
+              <stop offset="60%" stop-color="#FF6FAE" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#FFD0E8" stop-opacity="0"/>
             </linearGradient>
           </defs>
+
+          <!-- Bottom fire glow (behind body) -->
+          <ellipse cx="-5" cy="168" rx="88" ry="22"
+            fill="rgba(255,31,112,0.55)" style="filter:blur(14px)"/>
+          <ellipse cx="-5" cy="160" rx="60" ry="14"
+            fill="rgba(255,100,180,0.4)" style="filter:blur(7px)"/>
+
+          <!-- Bottom fire tongues (behind body, pointing up) -->
+          <g class="chili-flame">
+            <!-- left tongue -->
+            <path d="M -28,200 C -42,188, -48,168, -42,148 C -37,133, -28,126, -25,134 C -22,126, -14,132, -9,148 C -4,168, -10,188, -28,200 Z"
+              fill="url(#fireUp)" opacity="0.85"/>
+            <!-- center tongue (tallest) -->
+            <path d="M -5,210 C -22,198, -28,174, -20,150 C -14,130, -6,120, -2,128 C 2,120, 10,130, 15,150 C 22,174, 16,198, -5,210 Z"
+              fill="url(#fireUp)" opacity="0.9"/>
+            <!-- right tongue -->
+            <path d="M 26,202 C 12,190, 7,170, 13,150 C 18,135, 26,128, 29,136 C 32,128, 40,135, 44,150 C 50,170, 44,190, 26,202 Z"
+              fill="url(#fireUp)" opacity="0.8"/>
+            <!-- wide outer glow base -->
+            <path d="M -75,210 C -80,195, -70,178, -58,172 C -50,168, -42,172, -36,180 C -28,168, -16,158, -5,155 C 6,158, 18,168, 26,180 C 32,172, 42,167, 52,172 C 65,178, 74,196, 70,210 Z"
+              fill="rgba(255,31,112,0.25)" style="filter:blur(4px)"/>
+          </g>
 
           <!-- Body -->
           <path d="M -70 -110 C -50 -130, 40 -130, 70 -90 C 110 -30, 80 80, 30 130 C 0 155, -40 150, -50 110 C -70 50, -100 -20, -90 -70 C -86 -90, -80 -100, -70 -110 Z"
@@ -692,22 +710,6 @@ footer a:hover { color: var(--ink); }
           <!-- Stem -->
           <path d="M 0 -125 C 6 -160, 18 -170, 40 -168" fill="none" stroke="#1F6A29" stroke-width="7" stroke-linecap="round"/>
           <path d="M 0 -125 C 6 -160, 18 -170, 40 -168" fill="none" stroke="#7CD46A" stroke-width="3" stroke-linecap="round"/>
-
-          <!-- Flame group (animated) -->
-          <g class="chili-flame">
-            <!-- dark cartoon outline base -->
-            <path d="M 50,-110 C 44,-130, 47,-150, 56,-164 C 60,-174, 66,-184, 68,-190 C 70,-195, 73,-190, 73,-180 C 74,-168, 79,-159, 86,-157 C 92,-155, 96,-162, 100,-173 C 103,-182, 106,-196, 107,-198 C 108,-202, 111,-197, 111,-187 C 111,-175, 115,-163, 119,-161 C 123,-159, 126,-165, 128,-174 C 130,-182, 130,-176, 129,-164 C 128,-148, 128,-128, 126,-110 Z"
-              fill="#8B0038" opacity="0.7"/>
-            <!-- outer flame -->
-            <path d="M 53,-110 C 47,-130, 51,-150, 60,-163 C 64,-173, 70,-183, 72,-188 C 74,-193, 76,-188, 76,-179 C 77,-168, 82,-159, 88,-157 C 94,-155, 98,-162, 102,-172 C 105,-181, 108,-194, 109,-196 C 110,-199, 113,-195, 113,-185 C 113,-174, 117,-163, 121,-161 C 125,-160, 127,-166, 128,-174 C 130,-180, 130,-174, 128,-162 C 127,-146, 126,-126, 124,-110 Z"
-              fill="url(#flameOut)" opacity="0.95"/>
-            <!-- middle bright flame -->
-            <path d="M 60,-112 C 56,-130, 59,-150, 67,-163 C 71,-173, 76,-183, 78,-187 C 80,-191, 82,-187, 82,-178 C 83,-167, 87,-160, 93,-158 C 98,-156, 102,-163, 105,-172 C 108,-181, 110,-192, 111,-193 C 112,-196, 114,-192, 114,-184 C 114,-174, 117,-163, 120,-162 C 122,-162, 124,-166, 124,-172 C 125,-176, 125,-169, 124,-160 C 122,-144, 122,-126, 120,-112 Z"
-              fill="url(#flameMid)" opacity="0.9"/>
-            <!-- white core -->
-            <path d="M 90,-138 C 92,-152, 97,-168, 101,-178 C 104,-186, 107,-188, 107,-180 C 107,-170, 104,-160, 101,-152 C 97,-142, 91,-134, 90,-138 Z"
-              fill="rgba(255,230,245,0.95)"/>
-          </g>
         </svg>
       </div>
       <div class="pain-cards">
