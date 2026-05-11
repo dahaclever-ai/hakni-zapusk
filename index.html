@@ -186,31 +186,24 @@ section { position: relative; }
 
 /* Hero right visual */
 .hero-visual {
-  position: relative; display: flex; align-items: center; justify-content: center;
-  min-height: 480px;
+  position: relative; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  min-height: 480px; padding-top: 20px;
 }
 .hero-big-num {
-  font-family: var(--display); font-size: 320px; font-weight: 900;
-  line-height: 1; letter-spacing: -0.06em;
+  font-family: var(--display); font-size: clamp(200px, 22vw, 280px); font-weight: 900;
+  line-height: 0.9; letter-spacing: -0.06em;
   color: var(--magenta);
   text-shadow: 0 0 120px rgba(255,61,143,0.5), 0 0 40px rgba(255,61,143,0.3);
-  position: relative; z-index: 1;
   user-select: none;
 }
 .hero-big-num-label {
-  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-  font-family: var(--mono); font-size: 16px; letter-spacing: 0.3em;
+  font-family: var(--mono); font-size: 14px; letter-spacing: 0.3em;
   text-transform: uppercase; color: var(--ink2); white-space: nowrap;
-}
-.hero-arrow {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex; align-items: center; gap: 0;
-  z-index: 2;
+  margin: 12px 0 28px;
 }
 .hero-stats {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  display: flex; gap: 24px; z-index: 2;
+  display: flex; gap: 16px; width: 100%;
 }
 .hero-stat {
   background: rgba(255,255,255,0.04);
@@ -223,6 +216,18 @@ section { position: relative; }
 }
 .hero-stat-label {
   font-size: 13px; color: var(--ink2); margin-top: 4px;
+}
+
+/* ── Demo embed ── */
+#demo { padding: 80px 0 120px; }
+.demo-wrap {
+  border-radius: 24px; overflow: hidden;
+  border: 1.5px solid rgba(255,255,255,0.08);
+  box-shadow: 0 40px 120px rgba(0,0,0,0.5);
+}
+.demo-wrap iframe {
+  display: block; width: 100%; aspect-ratio: 16/9;
+  border: none;
 }
 
 /* ── Pain ── */
@@ -557,7 +562,7 @@ footer a:hover { color: var(--ink); }
     <a href="#weeks">6 недель</a>
     <a href="#pricing">Тарифы</a>
   </div>
-  <a href="https://t.me/dashazapuskai" target="_blank" class="nav-cta">Написать Даше →</a>
+  <a href="https://t.me/dashazapuskai" target="_blank" class="nav-cta">Узнать подробности →</a>
 </nav>
 
 <!-- Hero -->
@@ -578,7 +583,7 @@ footer a:hover { color: var(--ink); }
         </p>
         <div class="hero-buttons fade-up fade-up-delay-3">
           <a href="https://t.me/dashazapuskai" target="_blank" class="btn-primary">
-            Приобрести курс <span>→</span>
+            Узнать подробности <span>→</span>
           </a>
           <a href="https://t.me/dahazapuskai" target="_blank" class="btn-outline">
             <span>▶</span> Подписаться
@@ -603,6 +608,22 @@ footer a:hover { color: var(--ink); }
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- Demo -->
+<section id="demo">
+  <div class="container">
+    <div style="text-align:center; margin-bottom:40px">
+      <div class="label-tag fade-up" style="justify-content:center">89 секунд вместо тысячи слов</div>
+      <h2 class="fade-up fade-up-delay-1" style="font-family:var(--display);font-size:clamp(36px,4vw,60px);font-weight:900;letter-spacing:-0.04em;line-height:1">
+        Посмотри как<br/>
+        <span style="background:linear-gradient(90deg,var(--hotpink),var(--magenta),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent">работает система</span>
+      </h2>
+    </div>
+    <div class="demo-wrap fade-up fade-up-delay-2">
+      <iframe src="animation.html" scrolling="no" allowfullscreen></iframe>
     </div>
   </div>
 </section>
@@ -991,7 +1012,7 @@ footer a:hover { color: var(--ink); }
       <p class="cta-sub fade-up fade-up-delay-2">Два шага — выбери свой.</p>
       <div class="cta-buttons fade-up fade-up-delay-3">
         <a href="https://t.me/dashazapuskai" target="_blank" class="btn-primary" style="font-size:22px;padding:22px 56px">
-          ПРИОБРЕСТИ КУРС <span style="font-size:26px">→</span>
+          УЗНАТЬ ПОДРОБНОСТИ <span style="font-size:26px">→</span>
         </a>
         <a href="https://t.me/dahazapuskai" target="_blank" class="btn-outline" style="font-size:20px;padding:20px 48px">
           <span>▶</span> ПОДПИСАТЬСЯ НА КАНАЛ
@@ -1006,9 +1027,9 @@ footer a:hover { color: var(--ink); }
   <div><a href="#privacy">Политика конфиденциальности</a></div>
   <div class="footer-socials">
     <a href="https://t.me/dahazapuskai" target="_blank">▶ Telegram канал</a>
-    <a href="https://t.me/dashazapuskai" target="_blank">✉ Написать Даше</a>
+    <a href="https://t.me/dashazapuskai" target="_blank">✉ Написать</a>
   </div>
-  <div style="color:var(--ink3)">© 2026 Даша · Made by dahaclever</div>
+  <div style="color:var(--ink3)">© 2026 · Made by dahaclever</div>
 </footer>
 
 <script>
